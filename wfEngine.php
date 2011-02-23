@@ -19,6 +19,8 @@
  *
  ***************************************************************************/
 
+require_once(dirname(__FILE__).'/wfEngineAnnotations.php');
+
 class wfEngine {
 
     private $name;
@@ -71,8 +73,8 @@ class wfEngine {
             else {
                 $this->name = $arg;
             }
-            $this->_setCalledExternal(true);
         }
+        $this->_setCalledExternal(true);
     }
 
     public function setCallDefaultOnError($bool) {
@@ -176,12 +178,20 @@ class wfEngine {
         $cmd = $this->_buildCommand($cmd);
         $classMethod = $this->getPrefix().$cmd.$this->getPostfix();
 
+        $this->_checkAnnotations($classMethod);
+
         if (method_exists($this->wfobject, $classMethod)) {
             $this->_callMethod($classMethod, $cmd);
         }
         else {
             throw new Exception("WF Methode ".$cmd." existiert nicht!");
         }
+    }
+
+    private function _checkAnnotations($classMethod) {
+        $checkAnnotations = new wfEngineAnnotations($this->wfobject, $classMethod);
+        $checkAnnotations->setWFEngine($this);
+        $checkAnnotations->check();
     }
 
     private function _callMethod($classMethod, $cmd) {

@@ -58,11 +58,11 @@ class simpleExample implements wfObjectInterface {
         $this->_setOutput($out);
     }
 
+    /**
+     * @checkHash
+     * @checkLast('default')
+     */
     public function validateAction() {
-        if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('default')) {
-            die('Hash not valid or last command was not default!');
-        }
-
         if (strlen(trim($_POST['example']))<1) {
             $this->error = 1;
             return "default";
@@ -70,23 +70,24 @@ class simpleExample implements wfObjectInterface {
         return "save";
     }
 
+    /**
+     * @checkHash
+     * @checkLast('validate')
+     * @checkCommandWasCalledInternal
+     */
     public function saveAction() {
-        if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('validate') || $this->wf->commandWasCalledExternal()) {
-            die('Hash not valid or last command was not validate or command was called!');
-        }
-
 
         // save data
-
 
         $this->wf->setMustReload(true);
         return "thank";
     }
 
+    /**
+     * @checkHash
+     * @checkLast('save')
+     */
     public function thankAction() {
-        if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('save')) {
-            die('Hash not valid or last command was not save!');
-        }
         $url = "index.php?cmd=default";
 
         $out = '<html><head><title>Example</title></head><body>'.PHP_EOL;
