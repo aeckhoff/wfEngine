@@ -40,11 +40,14 @@ class wfEngineAnnotations {
             $this->_checkLast();
             $this->_checkCommandWasCalledInternal();
             $this->_checkCommandWasCalledExternal();
+            $this->_checkCommandWasSendViaGET();
+            $this->_checkCommandWasSendViaPOST();
+            $this->_checkCommandWasSendViaAJAX();
         }
     }
 
     private function _checkHash() {
-        if (strstr($this->doc, '@checkHash')) {
+        if (strstr($this->doc, '@wfCheckHash')) {
             if (!$this->wfEngine->checkGivenHash()) {
                 throw new Exception('Hash is not valid!');
             }
@@ -52,8 +55,8 @@ class wfEngineAnnotations {
     }
 
     private function _checkLast() {
-        if (strstr($this->doc, '@checkLast')) {
-            $pattern = "^".preg_quote("@checkLast('")."(.*?)".preg_quote("')")."^sm";
+        if (strstr($this->doc, '@wfCheckLast')) {
+            $pattern = "^".preg_quote("@wfCheckLast('")."(.*?)".preg_quote("')")."^sm";
             $ok = preg_match_all ( $pattern, $this->doc, $result);
             foreach($result[1] as $last) {
                 if ($this->wfEngine->checkLast($last)) {
@@ -67,7 +70,7 @@ class wfEngineAnnotations {
     }
 
     private function _checkCommandWasCalledInternal() {
-        if (strstr($this->doc, '@checkCommandWasCalledInternal')) {
+        if (strstr($this->doc, '@wfCheckCommandWasCalledInternal')) {
             if ($this->wfEngine->commandWasCalledExternal()) {
                 throw new Exception('Command was called external!');
             }
@@ -75,10 +78,35 @@ class wfEngineAnnotations {
     }
 
     private function _checkCommandWasCalledExternal() {
-        if (strstr($this->doc, '@checkCommandWasCalledExternal')) {
+        if (strstr($this->doc, '@wfCheckCommandWasCalledExternal')) {
             if (!$this->wfEngine->commandWasCalledExternal()) {
                 throw new Exception('Comand was call internal!');
             }
         }
     }
+
+    private function _checkCommandWasSendViaGET() {
+        if (strstr($this->doc, '@wfCheckCommandWasSendViaGET')) {
+            if (!$this->wfEngine->checkIfCalledViaGET()) {
+                throw new Exception('Comand was not send via GET!');
+            }
+        }
+    }
+
+    private function _checkCommandWasSendViaPOST() {
+        if (strstr($this->doc, '@wfCheckCommandWasSendViaPOST')) {
+            if (!$this->wfEngine->checkIfCalledViaPOST()) {
+                throw new Exception('Comand was not send via POST!');
+            }
+        }
+    }
+
+    private function _checkCommandWasSendViaAJAX() {
+        if (strstr($this->doc, '@wfCheckCommandWasSendViaAJAX')) {
+            if (!$this->wfEngine->checkIfCalledViaAJAX()) {
+                throw new Exception('Comand was not send via AJAX!');
+            }
+        }
+    }
+
 }

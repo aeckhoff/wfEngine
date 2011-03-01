@@ -36,34 +36,35 @@ class wfEngine {
     private $givenHashTag = false;
     private $salt = false;
     private $callDefaultOnError;
+    private $_method;
 
-    public function __construct($arg=false) {
+    public function __construct($arg=array()) {
         if (is_array($arg)) {
-            if ($arg['name'])
+            if (isset($arg['name']))
                 $this->name = $arg['name'];
             
-            if ($arg['callDefaultOnError'] === true)
+            if (isset($arg['callDefaultOnError']) && $arg['callDefaultOnError'] === true)
                 $this->setCallDefaultOnError(true);
             
-            if (intval($arg['maxInternalCalls'])>0)
+            if (isset($arg['maxInternalCalls']) && intval($arg['maxInternalCalls'])>0)
                 $this->setMaxInternalCalls(intval($arg['maxInternalCalls']));
             
-            if ($arg['defaultCommand'])
+            if (isset($arg['defaultCommand']))
                 $this->setDefaultCommand($arg['defaultCommand']);
             
-            if ($arg['prefix'])
+            if (isset($arg['prefix']))
                 $this->setPrefix($arg['prefix']);
             
-            if ($arg['postfix'])
+            if (isset($arg['postfix']))
                 $this->setPostfix($arg['postfix']);
             
-            if ($arg['wfObject'])
+            if (isset($arg['wfObject']))
                 $this->setWFObject($arg['wfObject']);
             
-            if ($arg['sessionObject'])
+            if (isset($arg['sessionObject']))
                 $this->setSessionObject($arg['sessionObject']);
             
-            if ($arg['givenHashTag'])
+            if (isset($arg['givenHashTag']))
                 $this->setGivenHashTag($arg['givenHashTag']);
         } 
         else {
@@ -75,6 +76,26 @@ class wfEngine {
             }
         }
         $this->_setCalledExternal(true);
+        $this->_setRequestMethod();
+    }
+
+    private function _setRequestMethod($setTrue = true) {
+        if ($setTrue === false) {
+            $this->_method = false;
+            return;
+        }
+        if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            $this->_method = "AJAX";
+            return;
+        }
+        if (isset($_SERVER['REQUEST_METHOD'])) {
+            $method = $_SERVER['REQUEST_METHOD'];
+            if ($method == "POST" || $method == "GET") {
+                $this->_method = $method;
+                return;
+            }
+        }
+        return;
     }
 
     public function setCallDefaultOnError($bool) {
@@ -221,6 +242,7 @@ class wfEngine {
         }
         $this->count++;
         $this->_setCalledExternal(false);
+        $this->_setRequestMethod(false);
         $this->executeWF($nextCommand);
     }
 
@@ -263,5 +285,20 @@ class wfEngine {
     private function _createHashTag() {
         $hash = substr(sha1(time()), 0, 8);
         $this->sessionObject->setValue('hash', $hash);
+    }
+
+    public function checkIfCalledViaGET() {
+        if ($this->_method == 'GET') return true;
+        return false;
+    }
+
+    public function checkIfCalledViaPOST() {
+        if ($this->_method == 'POST') return true;
+        return false;
+    }
+
+    public function checkIfCalledViaAJAX() {
+        if ($this->_method == 'AJAX') return true;
+        return false;
     }
 }

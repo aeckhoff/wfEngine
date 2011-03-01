@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../wfObjectInterface.php';
 require_once dirname(__FILE__).'/../wfEngine.php';
 require_once dirname(__FILE__).'/simpleSession.php';
 
-class simpleExample implements wfObjectInterface {
+class simpleExampleAnnotations implements wfObjectInterface {
 
     public function  __construct() {
 
@@ -26,13 +26,13 @@ class simpleExample implements wfObjectInterface {
     }
 
     public function execute() {
-        $params = array('name'=>'simpleTest', 
-                        'defaultCommand'=>'default', 
-                        'postfix' => 'Action', 
-                        'wfObject'=>$this, 
-                        'sessionObject'=>new simpleSession(), 
+        $params = array('name'=>'simpleTest',
+                        'defaultCommand'=>'default',
+                        'postfix' => 'Action',
+                        'wfObject'=>$this,
+                        'sessionObject'=>new simpleSession(),
                         'givenHashTag'=>$_GET['hash']);
-        
+
         $this->wf = new wfEngine($params);
 	$this->wf->executeWF($_GET['cmd']);
     }
@@ -58,10 +58,12 @@ class simpleExample implements wfObjectInterface {
         $this->_setOutput($out);
     }
 
+    /**
+     * @wfCheckHash
+     * @wfCheckLast('default')
+     * @wfCheckCommandWasSendViaPOST
+     */
     public function validateAction() {
-        if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('default') || !$this->wf->checkIfCalledViaPOST()) {
-            throw new Exception('WF Error!');
-        }
         if (strlen(trim($_POST['example']))<1) {
             $this->error = 1;
             return "default";
@@ -69,10 +71,12 @@ class simpleExample implements wfObjectInterface {
         return "save";
     }
 
+    /**
+     * @wfCheckHash
+     * @wfCheckLast('validate')
+     * @wfCheckCommandWasCalledInternal
+     */
     public function saveAction() {
-        if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('validate') || $this->wf->commandWasCalledExternal()) {
-            throw new Exception('WF Error!');
-        }
 
         // save data
 
@@ -80,11 +84,12 @@ class simpleExample implements wfObjectInterface {
         return "thank";
     }
 
+    /**
+     * @wfCheckHash
+     * @wfCheckLast('save')
+     * @wfCheckCommandWasSendViaGET
+     */
     public function thankAction() {
-        if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('save') || !$this->wf->checkIfCalledViaGET()) {
-            throw new Exception('WF Error!');
-        }
-
         $url = "index.php?cmd=default";
 
         $out = '<html><head><title>Example</title></head><body>'.PHP_EOL;

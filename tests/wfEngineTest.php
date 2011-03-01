@@ -141,4 +141,44 @@ class wfEngineTest extends PHPUnit_Framework_TestCase {
 	$this->object->setDefaultCommand('start');
         $this->assertFalse( $this->object->checkGivenHash());
     }
+
+    public function testCheckIfCalledViaGET() {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $object = new wfEngine();
+        $object->setSessionObject($this->sessionObject);
+        $object->setPrefix('wf_');
+        $object->setWFObject($this->mockObject);
+        $this->mockObject->setWFObject($object);
+	$object->setDefaultCommand('start');
+        $this->assertTrue($object->checkIfCalledViaGET());
+        $this->assertFalse($object->checkIfCalledViaPOST());
+        $this->assertFalse($object->checkIfCalledViaAJAX());
+    }
+
+    public function testCheckIfCalledViaPOST() {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $object = new wfEngine();
+        $object->setSessionObject($this->sessionObject);
+        $object->setPrefix('wf_');
+        $object->setWFObject($this->mockObject);
+        $this->mockObject->setWFObject($object);
+	$object->setDefaultCommand('start');
+        $this->assertFalse($object->checkIfCalledViaGET());
+        $this->assertTrue($object->checkIfCalledViaPOST());
+        $this->assertFalse($object->checkIfCalledViaAJAX());
+    }
+
+    public function testCheckIfCalledViaAJAX() {
+        $_SERVER['HTTP_X_REQUESTED_WITH'] = 'xmlhttprequest';
+        $object = new wfEngine();
+        $object->setSessionObject($this->sessionObject);
+        $object->setPrefix('wf_');
+        $object->setWFObject($this->mockObject);
+        $this->mockObject->setWFObject($object);
+	$object->setDefaultCommand('start');
+        $this->assertFalse($object->checkIfCalledViaGET());
+        $this->assertFalse($object->checkIfCalledViaPOST());
+        $this->assertTrue($object->checkIfCalledViaAJAX());
+    }
+
 }
