@@ -21,9 +21,9 @@ In addition annotations can be used to simplify the flow control checks and to h
 
 ## A simple Example
 
-For the example we use classic URLs with parameters and a simple session object with a setValue and getValue function.
+For the example we use classic URLs with parameters and a simple session object with a `setValue` and `getValue function.
 
-in out execute function we instantiate the wfEngine and start the processing.
+In the `execute` method we instantiate the wfEngine and start the processing.
 
     public function execute() {
         $params = array('name' => 'simpleTest',
@@ -37,8 +37,9 @@ in out execute function we instantiate the wfEngine and start the processing.
         $this->wf->executeWF($_GET['cmd']);
     }
 
-At first we set the parameters. If we use several wfEngine instances, we have to give each a unique name. Then we have to set a default command, in this example: 'default'. By setting the postfix to 'Action', the class emthod for the 'default' command must be 'defaultAction'. Then we have to inject the Object that should be processed by the wfEngine. We need a session Object to save the last and current commands in our flow and, if we want to prevent CSRF attacks, we have to set the hashtag coming from the http request.
-In this simple example, we use the $_GET variables. In production code, we usually use a request object with filtered values from the http requests. In the end, we start the flow with the actual command ('default', if $_GET['cmd'] is empty).
+At first we set the parameters. If we use several wfEngine instances, we have to give each a unique name. Then we have to set a default command, in this example: 'default'. By setting the postfix to 'Action', the class method for the 'default' command must be 'defaultAction'. Then we have to inject the Object that should be processed by the wfEngine. We need a session Object to save the last and current commands in our flow and, if we want to prevent CSRF attacks, we have to set the hashtag coming from the http request.
+In this simple example, we use the $_GET` variables. In production code, we usually use a request object with filtered values from the http requests. In the end, we start the flow with the actual command ('default', if `$_GET['cmd']` is empty).
+Injecting objects, parameters and variables can either be done via injecting an array in the constructor (in the example above) or by using setter methods.
 
     public function defaultAction() {
 
@@ -51,8 +52,8 @@ In this simple example, we use the $_GET variables. In production code, we usual
         $this->output = $out;
     }
 
-The wfEngine will look for any output in the processed Object by checking wuith isOutput(). If true, the processing stops and the Output can be presented. If isOutput() returns false, wfEngine looks for the next command returned by the called method and calls the corresponding method.
-In this case, the form will be shown, because we have an output. If the form is submitted, wfEngine executed 'validateAction' via $_GET['cmd'], which was set to 'validate' in the forms action parameter.
+The wfEngine will look for any output in the processed object by checking with the `isOutput` method. If true, the processing stops and the output can be presented. If `isOutput` returns false, wfEngine looks for the next command returned by the called method and calls the corresponding method.
+In this example, the form will be shown, because we have an output. If the form is submitted, wfEngine executes `validateAction` via `$_GET['cmd']`, which was set to `validate` in the forms action parameter.
 
     public function validateAction() {
         if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('default')) {
@@ -68,7 +69,7 @@ In this case, the form will be shown, because we have an output. If the form is 
     }
 
 At first we check, if the submitted hashtag corresponds to the session hashtag and we check if the last called command was 'default'.
-The we can validate the submitted form data. If there was an error, we show the form again by returning the 'default' command. Otherwise we return the "save" command.
+Then we can validate the submitted form data. If there was an error, we show the form again by returning the 'default' command. Otherwise we return the 'save' command.
 
     public function saveAction() {
         if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('validate') || $this->wf->commandWasCalledExternal()) {
@@ -84,8 +85,8 @@ The we can validate the submitted form data. If there was an error, we show the 
         return "thank";
     }
 
-At first we check again if the hashtag is correct and that the last command was 'validate'. In addition we also check, if the last command was called via a http request (external). That way we can avoid that important methods can be called directly from the web.
-In case of an save error, we return the "saveerror" command, otherwise we return the "thank" command. But before both we tell the wfEngine to call the next command via http request (by reloading the page with the new command). That way the "thank" or "saveerror" message will be shown with a fresh URL in the browser bar and our browser history is "clean".
+At first we check again, if the hashtag is correct and that the last command was 'validate'. In addition we also check, if the last command was called via a http request (external). That way we can avoid that important methods can be called directly from the web.
+In case of an save error, we return the "saveerror" command, otherwise we return the "thank" command. But before we tell the wfEngine to call the next command via http request (by reloading the page with the new command). That way the "thank" or "saveerror" message will be shown with a fresh URL in the browser and our browser history is "clean".
 
     public function thankAction() {
         if (!$this->wf->checkGivenHash() || !$this->wf->checkLast('save')) {
@@ -99,4 +100,58 @@ In case of an save error, we return the "saveerror" command, otherwise we return
         $this->output = $out;
     }
 
-In the end, we show the "Thank You" Message and put a link back to form in it. 
+In the end, we show the "Thank You" Message and put a link back to form in it.
+
+## Annotations
+
+Instead using the `checkGivenHash`, `checkLast`, etc methods, we can also use annotations. Let's have a look at an example:
+
+    /**
+     * @wfCheckHash
+     * @wfCheckLast('validate')
+     * @wfCheckCommandWasCalledInternal
+     */
+    public function saveAction() {
+
+        // save data
+
+        $this->wf->setMustReload(true);
+        return "thank";
+    }
+
+Here we can see, that the annotation wfCheckHash has the same function as the `checkGivenHash` method, etc...
+
+
+## Advanced check methods
+
+If you want to check for the http request method, there are three methods you can use:
+
+    checkIfCalledViaGET()
+    checkIfCalledViaPOST()
+    checkIfCalledViaAJAX()
+
+That way we can improve the example above, by not only checking, if validate was called from 'default', but also, that it was called by a POST request and the thank method was called by a GET request.
+In the following example we used the corresponding annotations:
+
+    /**
+     * @wfCheckHash
+     * @wfCheckLast('default')
+     * @wfCheckCommandWasSendViaPOST
+     */
+    public function validateAction() {
+        ...
+        return "save";
+    }
+
+and
+
+    /**
+     * @wfCheckHash
+     * @wfCheckLast('save')
+     * @wfCheckCommandWasSendViaGET
+     */
+    public function thankAction() {
+        ...
+        $this->_setOutput($out);
+    }
+
