@@ -1,4 +1,4 @@
-# wfEngine (WebFlow Engine)
+# wfEngine
 
 ## Introduction
 
