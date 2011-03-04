@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The wfEngine Class allows full control over sequential method calls. The main cause for creating wfEngine was to have a mechanism in our CMS, that allows us to implement a web workflow on every level (backend, frontend, plugins, modules and even plugins called by plugins, etc). The wfEngine is therefore the main mechanism that drives our controlers.
+The wfEngine Class allows full control over sequential method calls. The main cause for creating wfEngine was to have a mechanism in our CMS, that allows us to implement a web workflow on every level (backend, frontend, plugins, modules and even plugins called by plugins, etc). The wfEngine is therefore the main mechanism that drives our controllers.
 
 A simple example: if you have a contact form, you want to show the form on default, after submitting the formdata should be validated. On errors, the form should be called again with an error message. On success the data should be saved and a message should be shown to the user.
 
