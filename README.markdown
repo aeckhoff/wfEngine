@@ -17,3 +17,5 @@ An additional benefit is, that wfEngine encourages to build small functions, bec
 But the main goal was to have a simple and easy to extend mechanism to navigate through your application.
 
 In addition annotations can be used to simplify the flow control checks and to hold your code a little bit cleaner that way.
+
+Just have a look at the simple example: [[https://github.com/aeckhoff/wfEngine/wiki/A-simple-Example]]
